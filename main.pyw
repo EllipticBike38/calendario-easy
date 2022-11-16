@@ -182,11 +182,11 @@ def continue_button():
             'description': f"AutoCalendar  {config['Settings']['company']}",
             'start': {
                 'dateTime': datetime.datetime(day.year, day.month, day.day, 8, 30, 0, tzinfo=zoneinfo.ZoneInfo(config['Settings']['timeZone'])).isoformat(),
-                'timeZone': {config['Settings']['timeZone']},
+                'timeZone': config['Settings']['timeZone'],
             },
             'end': {
                 'dateTime':  datetime.datetime(day.year, day.month, day.day, 12 if parttime else 17, 30 if parttime else 15, 0, tzinfo=zoneinfo.ZoneInfo(config['Settings']['timeZone'])).isoformat(),
-                'timeZone': {config['Settings']['timeZone']},
+                'timeZone': config['Settings']['timeZone'],
             },
             'reminders': {
                 'useDefault': False,
@@ -195,6 +195,7 @@ def continue_button():
                 ],
             },
         }
+        print(event)
         for ii in range(5):
 
             insert_event(event(week_vars[ii].get(
