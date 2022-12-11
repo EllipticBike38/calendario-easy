@@ -27,7 +27,7 @@ service = ...
 creds = None
 
 login = None
-top=None
+top = None
 root = ...
 welcome = ...
 date = ...
@@ -38,12 +38,14 @@ week_vars = ...
 retry = True
 user_info = {}
 
+
 def main():
     global retry
     while retry:
         retry = False
         auth()
     print("esco")
+
 
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -55,6 +57,7 @@ def resource_path(relative_path):
 
     return os.path.join(base_path, relative_path)
 
+
 def auth():
     global creds, welcome, date, monday, sunday, now, week, week_vars, root, login, retry, part_times_vars, user_info
 
@@ -65,7 +68,8 @@ def auth():
 
     if creds and creds.valid:
         try:
-            service2 = build('oauth2', 'v2', credentials=creds, static_discovery=False)
+            service2 = build('oauth2', 'v2', credentials=creds,
+                             static_discovery=False)
             user_info = service2.userinfo().get().execute()
         except:
             ...
@@ -77,7 +81,7 @@ def auth():
         except:
             root.iconbitmap(resource_path('static\img\head2.ico'))
         root.title("CalendarPlan")
-        
+
         # Import the tcl file
         root.tk.call('source', resource_path('themes/forest-dark.tcl'))
 
@@ -118,8 +122,9 @@ def auth():
 
         ttk.Button(frm, text="CONFIRM", command=continue_button).grid(
             column=1, row=3, columnspan=3, pady=5)
-            
-        service = build('calendar', 'v3', credentials=creds, static_discovery=False)
+
+        service = build('calendar', 'v3', credentials=creds,
+                        static_discovery=False)
         open_or_create_calendar(service)
         date_formatter(datetime.date.today())
         root.mainloop()
@@ -132,7 +137,7 @@ def auth():
         except:
             login.iconbitmap(resource_path('static\img\head2.ico'))
         login.title("CalendarPlan - Login")
-                # Import the tcl file
+        # Import the tcl file
         login.tk.call('source', resource_path('themes/forest-dark.tcl'))
 
         # Set the theme with the theme_use method
@@ -172,14 +177,15 @@ def continue_button():
     global creds, monday, sunday
     if os.path.exists('token.json'):
         creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-    
+
     try:
-        service: Resource = build('calendar', 'v3', credentials=creds, static_discovery=False)
+        service: Resource = build(
+            'calendar', 'v3', credentials=creds, static_discovery=False)
         events = get_week_events(service)
         event: Callable[[str, datetime.date, bool], dict] = lambda tipo, day, parttime: {
             'summary': f"{tipo} - {config['Settings']['company']}",
             'location': config['Settings']['companyAddress'],
-            'description': f"AutoCalendar  {config['Settings']['company']}",
+            'description': f"AutoCalendar {config['Settings']['company']}",
             'start': {
                 'dateTime': datetime.datetime(day.year, day.month, day.day, 8, 30, 0, tzinfo=zoneinfo.ZoneInfo(config['Settings']['timeZone'])).isoformat(),
                 'timeZone': config['Settings']['timeZone'],
@@ -221,39 +227,41 @@ def insert_event(event: dict, events: list, service):
     if events:
         for ee in events:
             if ee['day'] == event['start']['dateTime'].split('T')[0]:
-                service.delete(calendarId=calendarId, eventId=ee['id']).execute()
+                service.delete(calendarId=calendarId,
+                               eventId=ee['id']).execute()
     if event['summary'].split(' - ')[0] != 'A':
         service.insert(calendarId=calendarId, body=event).execute()
 
+
 def open_or_create_calendar(service):
     global calendarId
-    calendarName=config['Settings']['company'].lower()
-    page_token=None
+    calendarName = config['Settings']['company'].lower()
+    page_token = None
     while True:
         calendar_list = service.calendarList().list(pageToken=page_token).execute()
         page_token = calendar_list.get('nextPageToken')
         for calendar_list_entry in calendar_list['items']:
             if calendar_list_entry['summary'].lower() == calendarName:
-                calendarId=calendar_list_entry['id']
-                page_token=None
+                calendarId = calendar_list_entry['id']
+                page_token = None
                 return
         if not page_token:
             break
     calendar = {
-    'summary': calendarName,
-    'timeZone': config['Settings']['timeZone']
+        'summary': calendarName,
+        'timeZone': config['Settings']['timeZone']
     }
     print(calendar)
     calendarId = service.calendars().insert(body=calendar).execute()['id']
 
-    
 
 def get_week_events(service=None):
     global week_vars, part_times_vars, calendarId
     service_bool = True
     if not service:
         service_bool = False
-        service = build('calendar', 'v3', credentials=creds, static_discovery=False)
+        service = build('calendar', 'v3', credentials=creds,
+                        static_discovery=False)
     # Call the Calendar API
     min_date = datetime.datetime.combine(
         monday, datetime.time()).isoformat() + 'Z'
@@ -265,7 +273,8 @@ def get_week_events(service=None):
     events = [ee for ee in events_result.get('items', []) if ee.get(
         'description', '') == f"AutoCalendar {config['Settings']['company']}"]
     if not events:
-        print('No upcoming events found.')
+        print(f'No upcoming events found for "AutoCalendar {config["Settings"]["company"]}".')
+        print([ee for ee in events_result.get('items', [])])
     uptdated = set()
     ans = []
     # Prints the start and name of the next 10 events
@@ -315,7 +324,8 @@ def open_calendar():
         top.destroy()
     ttk.Button(top, text="ok", command=date_pick).pack()
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     print(config.sections())
     config.read(resource_path('user.ini'))
     print(config.sections())
