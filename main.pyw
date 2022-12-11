@@ -185,7 +185,7 @@ def continue_button():
         event: Callable[[str, datetime.date, bool], dict] = lambda tipo, day, parttime: {
             'summary': f"{tipo} - {config['Settings']['company']}",
             'location': config['Settings']['companyAddress'],
-            'description': f"AutoCalendar  {config['Settings']['company']}",
+            'description': f"AutoCalendar {config['Settings']['company']}",
             'start': {
                 'dateTime': datetime.datetime(day.year, day.month, day.day, 8, 30, 0, tzinfo=zoneinfo.ZoneInfo(config['Settings']['timeZone'])).isoformat(),
                 'timeZone': config['Settings']['timeZone'],
@@ -273,7 +273,8 @@ def get_week_events(service=None):
     events = [ee for ee in events_result.get('items', []) if ee.get(
         'description', '') == f"AutoCalendar {config['Settings']['company']}"]
     if not events:
-        print('No upcoming events found.')
+        print(f'No upcoming events found for "AutoCalendar {config["Settings"]["company"]}".')
+        print([ee for ee in events_result.get('items', [])])
     uptdated = set()
     ans = []
     # Prints the start and name of the next 10 events
